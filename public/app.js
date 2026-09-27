@@ -1,4 +1,5 @@
 import { ANNOUNCEMENTS } from './examples.js';
+import { getAudioEffectPreset, renderAudioEffect } from './audio-effects.js';
 
 const MAX_TEXT_LENGTH = 2000;
 const FILTERS = [
@@ -18,6 +19,7 @@ const elements = {
   inputError: document.querySelector('#inputError'),
   rate: document.querySelector('#rateRange'),
   rateValue: document.querySelector('#rateValue'),
+  effectFieldset: document.querySelector('#effectFieldset'),
   generate: document.querySelector('#generateButton'),
   generateLabel: document.querySelector('.generate-label'),
   filters: document.querySelector('#categoryFilters'),
@@ -33,6 +35,7 @@ const elements = {
   currentTime: document.querySelector('#currentTime'),
   duration: document.querySelector('#duration'),
   download: document.querySelector('#downloadButton'),
+  downloadLabel: document.querySelector('.download-label'),
   message: document.querySelector('#liveMessage'),
 };
 
@@ -118,14 +121,26 @@ function setMessage(message, state = 'ready') {
   elements.message.dataset.state = state;
 }
 
-function setGenerating(isGenerating) {
-  elements.generate.disabled = isGenerating;
-  elements.generate.setAttribute('aria-busy', String(isGenerating));
-  elements.generate.classList.toggle('is-generating', isGenerating);
-  elements.generateLabel.textContent = isGenerating ? 'Generating announcement…' : 'Generate MP3';
+function selectedEffect() {
+  return elements.form.querySelector('input[name="paEffect"]:checked')?.value || 'none';
 }
 
-function downloadFilename() {
+function updateGenerateLabel() {
+  elements.generateLabel.textContent = selectedEffect() === 'none' ? 'Generate MP3' : 'Generate WAV';
+}
+
+function setGenerating(isGenerating) {
+  elements.generate.disabled = isGenerating;
+  elements.effectFieldset.disabled = isGenerating;
+  elements.generate.setAttribute('aria-busy', String(isGenerating));
+  elements.generate.classList.toggle('is-generating', isGenerating);
+  if (isGenerating) elements.generateLabel.textContent = 'Generating announcement…';
+  else updateGenerateLabel();
+}
+
+function downloadFilename(effectId) {
+  const suffix = effectId === 'none' ? 'sonia' : `sonia_${effectId.replaceAll('-', '_')}`;
+  const extension = effectId === 'none' ? 'mp3' : 'wav';
   if (activeExample) {
     const slug = activeExample.title
       .normalize('NFKD')
@@ -134,7 +149,7 @@ function downloadFilename() {
       .toLowerCase()
       .replace(/[\s-]+/g, '_')
       .slice(0, 48);
-    return `${slug || 'announcement'}_sonia.mp3`;
+    return `${slug || 'announcement'}_${suffix}.${extension}`;
   }
 
   const now = new Date();
@@ -147,7 +162,7 @@ function downloadFilename() {
     String(now.getMinutes()).padStart(2, '0'),
     String(now.getSeconds()).padStart(2, '0'),
   ].join('');
-  return `metrovoiceover_sonia_${stamp}.mp3`;
+  return `metrovoiceover_${suffix}_${stamp}.${extension}`;
 }
 
 async function responseError(response) {
@@ -176,6 +191,7 @@ async function generateAudio(event) {
   event.preventDefault();
   if (requestInFlight) return;
   const text = elements.text.value.trim();
+  const effectId = selectedEffect();
   elements.inputError.textContent = '';
   setMessage('');
 
@@ -213,8 +229,18 @@ async function generateAudio(event) {
       throw new Error('The speech service returned an unexpected file. Please try again.');
     }
 
-    const blob = await response.blob();
-    if (blob.size === 0) throw new Error('The generated audio was empty. Please try again.');
+    const synthesizedBlob = await response.blob();
+    if (synthesizedBlob.size === 0) throw new Error('The generated audio was empty. Please try again.');
+
+    let blob = synthesizedBlob;
+    const preset = getAudioEffectPreset(effectId);
+    if (preset) {
+      setMessage(`Applying ${preset.name} to the generated audio…`);
+      blob = await renderAudioEffect(synthesizedBlob, effectId);
+      if (!blob.type.toLowerCase().includes('audio/wav') || blob.size <= 44) {
+        throw new Error('The station PA effect could not be exported as a WAV. Please try again.');
+      }
+    }
 
     const oldUrl = currentObjectUrl;
     currentObjectUrl = URL.createObjectURL(blob);
@@ -222,6 +248,7 @@ async function generateAudio(event) {
     elements.audio.load();
     elements.audioEmpty.hidden = true;
     elements.audioResult.hidden = false;
+    elements.audioFormat.textContent = preset ? `WAV · ${preset.name.toUpperCase()}` : 'MP3 · SONIA';
     elements.audioFormat.hidden = false;
     elements.play.disabled = false;
     elements.replay.disabled = false;
@@ -232,7 +259,8 @@ async function generateAudio(event) {
     elements.play.textContent = '▶';
     elements.play.setAttribute('aria-label', 'Play announcement');
     elements.download.href = currentObjectUrl;
-    elements.download.download = downloadFilename();
+    elements.download.download = downloadFilename(effectId);
+    elements.downloadLabel.textContent = `Download ${preset ? 'WAV' : 'MP3'}`;
     elements.download.setAttribute('aria-disabled', 'false');
     if (oldUrl) URL.revokeObjectURL(oldUrl);
     setMessage('Audio ready. Press Play to listen.');
@@ -268,6 +296,7 @@ elements.text.addEventListener('input', () => {
   }
 });
 elements.rate.addEventListener('input', updateRate);
+elements.effectFieldset.addEventListener('change', updateGenerateLabel);
 elements.play.addEventListener('click', () => {
   if (elements.audio.paused) playAudio();
   else elements.audio.pause();
@@ -311,3 +340,4 @@ renderFilters();
 renderExamples();
 updateCounter();
 updateRate();
+updateGenerateLabel();

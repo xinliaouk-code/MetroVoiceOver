@@ -45,6 +45,7 @@
             </div>
             <textarea
               id="announcementText"
+              class="announcement-input"
               name="text"
               maxlength="2000"
               rows="5"
@@ -72,6 +73,25 @@
                 <div class="range-labels"><span>Slower</span><span>Faster</span></div>
               </div>
             </div>
+
+            <fieldset id="effectFieldset" class="effect-card" aria-describedby="effectHint">
+              <legend class="effect-legend">STATION PA EFFECT</legend>
+              <div class="effect-options">
+                <label class="effect-option">
+                  <input type="radio" name="paEffect" value="none" checked />
+                  <span>No effect</span>
+                </label>
+                <label class="effect-option">
+                  <input type="radio" name="paEffect" value="modern-station-pa" />
+                  <span>Modern Station PA</span>
+                </label>
+                <label class="effect-option">
+                  <input type="radio" name="paEffect" value="deep-tube" />
+                  <span>Deep Tube</span>
+                </label>
+              </div>
+              <p id="effectHint" class="effect-hint">Selected effects are applied before playback and exported as a WAV.</p>
+            </fieldset>
 
             <button id="generateButton" class="generate-button" type="submit">
               <span class="button-spinner" aria-hidden="true"></span>
@@ -105,7 +125,7 @@
               </div>
               <div class="audio-actions">
                 <button id="replayButton" class="secondary-button" type="button" disabled><span aria-hidden="true">↺</span> Replay</button>
-                <a id="downloadButton" class="download-button" href="#" download aria-disabled="true"><span aria-hidden="true">↓</span> Download MP3</a>
+                <a id="downloadButton" class="download-button" href="#" download aria-disabled="true"><span aria-hidden="true">↓</span> <span class="download-label">Download MP3</span></a>
               </div>
             </div>
             <p id="liveMessage" class="live-message" role="status" aria-live="polite"></p>
