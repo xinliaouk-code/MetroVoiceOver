@@ -14,4 +14,9 @@ assert.match(inputRule, /background:\s*#fffdf8/i);
 assert.match(css, /\.field-heading label::before\s*\{[^}]*content:/s);
 assert.match(css, /\.announcement-input:focus\s*\{/);
 
+const effectOptionRule = css.match(/\.effect-option\s*\{([^}]+)\}/s)?.[1];
+assert.ok(effectOptionRule, 'station effect choices should have a dedicated layout rule');
+assert.match(effectOptionRule, /align-items:\s*center/);
+assert.match(css, /\.effect-option input\s*\{[^}]*margin:\s*0/s);
+
 console.log('Announcement editor visual rules passed.');
