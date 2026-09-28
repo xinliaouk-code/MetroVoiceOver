@@ -13,6 +13,7 @@ assert.match(html, /<script defer src="\/_vercel\/insights\/script\.js"><\/scrip
 assert.match(html, /id="siteVisitCount"/);
 assert.match(html, /id="audioGenerationCount"/);
 assert.match(app, /https:\/\/counterapi\.com\/api/);
+assert.match(app, /url\.searchParams\.set\('unique',\s*'false'\)/);
 assert.match(app, /updateSiteCount\('view',\s*elements\.siteVisitCount,\s*true\)/);
 
 const generationFlow = app.match(/async function generateAudio\(event\)\s*\{([\s\S]*?)\n\}\n\nasync function playAudio/)?.[1];

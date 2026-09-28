@@ -53,6 +53,7 @@ async function updateSiteCount(action, target, increment = false) {
   if (!target || ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname)) return;
 
   const url = new URL(`${COUNTER_API_BASE}/${COUNTER_NAMESPACE}/${action}/${COUNTER_KEY}`);
+  url.searchParams.set('unique', 'false');
   if (!increment) url.searchParams.set('readOnly', 'true');
 
   try {
