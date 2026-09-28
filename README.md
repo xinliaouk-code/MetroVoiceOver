@@ -26,6 +26,8 @@ Safari / desktop browser
 
 `edge-tts` runs only in `api/tts.py`, on the Vercel backend. The browser makes one synthesis request; a selected PA preset then processes that response with the Web Audio API and exports the result as 16-bit PCM WAV. The presets use sample-rate-safe filters, compression, light saturation, two delay taps, a short low-mix reverb, loudness matching, and a −1 dBFS peak ceiling. The no-effect path skips decoding and post-processing and keeps the original MP3. Generated audio stays in memory and as a temporary browser object URL; this app does not save it to a server library. Announcement text is sent to Vercel and the Edge speech service to produce audio.
 
+The interface uses the self-hosted Johnston100 regular font file supplied by the site owner.
+
 ## Local setup
 
 Requirements: Python 3.12 or later, Node.js 20 or later, and the Vercel CLI.

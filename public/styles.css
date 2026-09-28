@@ -1,9 +1,17 @@
+@font-face {
+  font-family: "Johnston100";
+  src: url("/fonts/Johnston100W03-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 :root {
   color-scheme: light;
-  font-family: Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: "Johnston100", Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   color: #1a2c3a;
   background: #f4f5f3;
-  font-synthesis: none;
+  font-synthesis: weight;
   text-rendering: optimizeLegibility;
   --ink: #1a2c3a;
   --muted: #687782;
@@ -81,20 +89,6 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, input:focus-visib
 .brand-mark span:nth-child(3) { height: 13px; }
 .brand-copy { display: grid; gap: 2px; }
 .brand-name { font-size: 17px; font-weight: 720; letter-spacing: -0.025em; }
-.brand-description { color: var(--muted); font-size: 12px; letter-spacing: 0.005em; }
-
-.voice-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: #41535f;
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-.status-light { width: 7px; height: 7px; border-radius: 50%; background: #4d8a6d; box-shadow: 0 0 0 3px #e2eee6; }
-.status-divider { color: #9aa4a8; }
-
 .workbench {
   width: min(100%, 1120px);
   margin: 34px auto 26px;
@@ -347,12 +341,10 @@ input[type="range"] { width: 100%; height: 28px; margin: 4px 0 0; accent-color: 
 
 @media (max-width: 680px) {
   .app-shell { padding-inline: 16px; }
-  .site-header { min-height: 72px; gap: 10px; }
+  .site-header { min-height: 72px; }
   .brand { gap: 9px; }
   .brand-mark { width: 31px; height: 31px; }
   .brand-name { font-size: 16px; }
-  .brand-description { font-size: 10px; }
-  .voice-status { gap: 6px; font-size: 10px; }
   .workbench { width: 100%; margin: 17px auto 22px; grid-template-columns: minmax(0, 1fr); gap: 14px; }
   .editor-panel { padding: 20px 17px 17px; }
   .panel-heading { margin-bottom: 20px; }
@@ -382,7 +374,6 @@ input[type="range"] { width: 100%; height: 28px; margin: 4px 0 0; accent-color: 
 
 @media (max-width: 370px) {
   .app-shell { padding-inline: 12px; }
-  .voice-status { font-size: 9px; }
   .voice-controls { grid-template-columns: 1fr; }
   .voice-name span { display: inline; }
   .voice-card { min-height: 70px; }
