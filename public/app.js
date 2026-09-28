@@ -2,6 +2,9 @@ import { ANNOUNCEMENTS } from './examples.js';
 import { getAudioEffectPreset, renderAudioEffect } from './audio-effects.js';
 
 const MAX_TEXT_LENGTH = 2000;
+const COUNTER_API_BASE = 'https://counterapi.com/api';
+const COUNTER_NAMESPACE = 'metrovoiceover-xinliaouk-code';
+const COUNTER_KEY = 'home';
 const FILTERS = [
   ['All', 'All'],
   ['Departure', 'Departure'],
@@ -37,12 +40,36 @@ const elements = {
   download: document.querySelector('#downloadButton'),
   downloadLabel: document.querySelector('.download-label'),
   message: document.querySelector('#liveMessage'),
+  siteVisitCount: document.querySelector('#siteVisitCount'),
+  audioGenerationCount: document.querySelector('#audioGenerationCount'),
 };
 
 let activeCategory = 'All';
 let activeExample = null;
 let currentObjectUrl = null;
 let requestInFlight = false;
+
+async function updateSiteCount(action, target, increment = false) {
+  if (!target || ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname)) return;
+
+  const url = new URL(`${COUNTER_API_BASE}/${COUNTER_NAMESPACE}/${action}/${COUNTER_KEY}`);
+  if (!increment) url.searchParams.set('readOnly', 'true');
+
+  try {
+    const response = await fetch(url, { cache: 'no-store', keepalive: true });
+    if (!response.ok) return;
+
+    const result = await response.json();
+    const count = Number(result?.value);
+    const previousCount = Number(target.dataset.counterValue);
+    if (Number.isSafeInteger(count) && count >= 0 && (!Number.isSafeInteger(previousCount) || count >= previousCount)) {
+      target.dataset.counterValue = String(count);
+      target.textContent = count.toLocaleString('en-GB');
+    }
+  } catch {
+    // Stats are best-effort and must not affect announcement generation.
+  }
+}
 
 function renderFilters() {
   elements.filters.replaceChildren();
@@ -264,6 +291,7 @@ async function generateAudio(event) {
     elements.download.setAttribute('aria-disabled', 'false');
     if (oldUrl) URL.revokeObjectURL(oldUrl);
     setMessage('Audio ready. Press Play to listen.');
+    void updateSiteCount('audio-generated', elements.audioGenerationCount, true);
   } catch (error) {
     if (error.name === 'AbortError') {
       setMessage('Audio generation timed out. Please try again.', 'error');
@@ -341,3 +369,5 @@ renderExamples();
 updateCounter();
 updateRate();
 updateGenerateLabel();
+void updateSiteCount('view', elements.siteVisitCount, true);
+void updateSiteCount('audio-generated', elements.audioGenerationCount);

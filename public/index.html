@@ -8,6 +8,8 @@
     <title>MetroVoiceOver</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="stylesheet" href="/styles.css" />
+    <script defer src="/analytics-bootstrap.js"></script>
+    <script defer src="/_vercel/insights/script.js"></script>
     <script type="module" src="/app.js"></script>
   </head>
   <body>
@@ -142,8 +144,14 @@
       </main>
 
       <footer class="site-footer">
-        <span>Generated with en-GB-SoniaNeural</span>
-        <span>Audio is temporary and isn’t saved to a library.</span>
+        <div class="footer-statistics" aria-label="Site statistics">
+          <span class="footer-stat"><strong id="siteVisitCount">—</strong> page views</span>
+          <span class="footer-stat"><strong id="audioGenerationCount">—</strong> announcements generated</span>
+        </div>
+        <div class="footer-meta">
+          <span>Generated with en-GB-SoniaNeural</span>
+          <span>Audio is temporary and isn’t saved to a library. · <a href="https://counterapi.com/" target="_blank" rel="noreferrer">CounterAPI</a></span>
+        </div>
       </footer>
     </div>
   </body>

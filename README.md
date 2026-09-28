@@ -28,6 +28,8 @@ Safari / desktop browser
 
 The interface uses the self-hosted Johnston100 regular font file supplied by the site owner.
 
+The footer shows total page views and successful announcement generations using CounterAPI; only the counter action is sent, never announcement text. Vercel Web Analytics also records site traffic for the project dashboard after it is enabled in the Vercel project settings. The footer counters are best-effort public totals and do not require a database or project token.
+
 ## Local setup
 
 Requirements: Python 3.12 or later, Node.js 20 or later, and the Vercel CLI.
