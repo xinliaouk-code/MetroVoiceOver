@@ -2,6 +2,10 @@
 
 A small, cross-device utility for creating British railway and Underground announcements with the fixed `en-GB-SoniaNeural` voice. It runs in iPhone Safari, iPad Safari, and desktop browsers. The interface sends text to the server; the Vercel Python Function runs `edge-tts==7.2.8` and returns the generated MP3. The browser does not use `speechSynthesis` or run the TTS package.
 
+## Recent development
+
+2026-10-13 — **MVO-FIX-001: IMPLEMENTED / LOCAL SYNTHESIS VERIFIED / RELEASE PENDING.** The pinned TTS package now connects through Microsoft's current synthesis WebSocket endpoint. The legacy endpoint rejected connections with HTTP 403. Short and multi-sentence Sonia announcements returned valid 24 kHz mono MP3s through the local HTTP handler; ten Python tests and all four JavaScript check suites pass. Production recovery and browser playback after release remain NOT TESTED. See [implementation status](docs/IMPLEMENTATION_PLAN.md) and [task evidence](docs/tasks/MVO-FIX-001.md).
+
 ## Features
 
 - Generate, play, replay, seek, and download a temporary MP3; optionally apply one station PA preset and download the processed WAV.
@@ -18,13 +22,15 @@ Safari / desktop browser
   → POST /api/tts over HTTPS
   → Vercel Python Function
   → edge-tts 7.2.8, voice en-GB-SoniaNeural
-  → Microsoft Edge online speech service
+  → api.msedgeservices.com/tts/cognitiveservices/websocket/v1
   → one audio/mpeg response
   → No effect: original MP3 playback/download
   → PA preset: browser OfflineAudioContext post-processing at the decoded sample rate → PCM WAV playback/download
 ```
 
 `edge-tts` runs only in `api/tts.py`, on the Vercel backend. The browser makes one synthesis request; a selected PA preset then processes that response with the Web Audio API and exports the result as 16-bit PCM WAV. The presets use sample-rate-safe filters, compression, light saturation, two delay taps, a short low-mix reverb, loudness matching, and a −1 dBFS peak ceiling. The no-effect path skips decoding and post-processing and keeps the original MP3. Generated audio stays in memory and as a temporary browser object URL; this app does not save it to a server library. Announcement text is sent to Vercel and the Edge speech service to produce audio.
+
+The October 2026 compatibility fix updates the transport module's `WSS_URL` before synthesis, following the endpoint change in [upstream PR #491](https://github.com/rany2/edge-tts/pull/491). It keeps the pinned package, fixed voice, prosody and existing authentication algorithm. Remove this override only when upgrading to a reviewed release that includes the endpoint fix, and repeat live MP3 generation checks. The application logs exception type and numeric upstream HTTP status, without logging announcement text or exception URLs.
 
 The interface uses the self-hosted Johnston100 regular font file supplied by the site owner.
 

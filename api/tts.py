@@ -1,6 +1,7 @@
 """Ephemeral Sonia MP3 generation for the Vercel Python runtime."""
 
 import asyncio
+import importlib
 import json
 import logging
 import re
@@ -86,6 +87,17 @@ def parse_request(raw_body: bytes) -> TTSRequest:
 
 async def _collect_mp3(text: str, rate: str) -> bytes:
     import edge_tts
+    from edge_tts.constants import TRUSTED_CLIENT_TOKEN
+
+    # edge-tts 7.2.8 still uses the legacy host, which began rejecting
+    # synthesis handshakes in October 2026. Apply the endpoint-only fix from
+    # https://github.com/rany2/edge-tts/pull/491 to the pinned package.
+    # Communicate reads WSS_URL from its own module, not constants at runtime.
+    transport = importlib.import_module("edge_tts.communicate")
+    transport.WSS_URL = (
+        "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1"
+        f"?Ocp-Apim-Subscription-Key={TRUSTED_CLIENT_TOKEN}"
+    )
 
     communicate = edge_tts.Communicate(
         text,
@@ -165,7 +177,13 @@ class handler(BaseHTTPRequestHandler):
             _send_json(self, 504, "generation_timeout", "Audio generation took too long. Please try again.")
             return
         except Exception as error:  # Edge TTS errors vary by network and upstream response.
-            LOGGER.warning("Edge TTS request failed (%s).", type(error).__name__)
+            # Do not log the exception URL: it can include upstream tokens.
+            status = getattr(error, "status", None)
+            LOGGER.warning(
+                "Edge TTS request failed (%s, upstream status=%s).",
+                type(error).__name__,
+                status if isinstance(status, int) else "unknown",
+            )
             _send_json(self, 502, "generation_failed", "Audio generation failed. Please try again.")
             return
 

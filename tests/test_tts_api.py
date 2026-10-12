@@ -1,7 +1,67 @@
 import json
+import importlib
 import unittest
+from unittest.mock import patch
+from urllib.parse import parse_qs, urlsplit
 
-from api.tts import MAX_BODY_BYTES, MAX_TEXT_LENGTH, RequestError, parse_request
+from api.tts import MAX_BODY_BYTES, MAX_TEXT_LENGTH, RequestError, _collect_mp3, parse_request
+
+
+class SynthesisTests(unittest.IsolatedAsyncioTestCase):
+    async def test_uses_current_endpoint_and_preserves_sonia_settings(self):
+        import edge_tts
+        from edge_tts.constants import TRUSTED_CLIENT_TOKEN
+
+        transport = importlib.import_module("edge_tts.communicate")
+        original_url = transport.WSS_URL
+        calls = []
+
+        class FakeCommunicate:
+            def __init__(self, *args, **kwargs):
+                calls.append((args, kwargs))
+
+            async def stream(self):
+                url = urlsplit(transport.WSS_URL)
+                self_test.assertEqual(url.scheme, "wss")
+                self_test.assertEqual(url.hostname, "api.msedgeservices.com")
+                self_test.assertEqual(url.path, "/tts/cognitiveservices/websocket/v1")
+                self_test.assertEqual(parse_qs(url.query), {
+                    "Ocp-Apim-Subscription-Key": [TRUSTED_CLIENT_TOKEN],
+                })
+                yield {"type": "WordBoundary", "data": "ignored metadata"}
+                yield {"type": "audio", "data": b"first"}
+                yield {"type": "audio", "data": b"second"}
+
+        self_test = self
+        try:
+            with patch.object(edge_tts, "Communicate", FakeCommunicate):
+                self.assertEqual(await _collect_mp3("Test announcement", "-10%"), b"firstsecond")
+            self.assertEqual(calls, [(("Test announcement", "en-GB-SoniaNeural"), {
+                "rate": "-10%", "pitch": "+0Hz", "volume": "+0%",
+            })])
+        finally:
+            transport.WSS_URL = original_url
+
+    async def test_upstream_failure_does_not_return_partial_audio(self):
+        import edge_tts
+
+        transport = importlib.import_module("edge_tts.communicate")
+        original_url = transport.WSS_URL
+
+        class FailingCommunicate:
+            def __init__(self, *args, **kwargs):
+                pass
+
+            async def stream(self):
+                yield {"type": "audio", "data": b"partial"}
+                raise ConnectionError("upstream disconnected")
+
+        try:
+            with patch.object(edge_tts, "Communicate", FailingCommunicate):
+                with self.assertRaises(ConnectionError):
+                    await _collect_mp3("Test announcement", "+3%")
+        finally:
+            transport.WSS_URL = original_url
 
 
 class ParseRequestTests(unittest.TestCase):
