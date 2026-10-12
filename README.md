@@ -4,7 +4,7 @@ A small, cross-device utility for creating British railway and Underground annou
 
 ## Recent development
 
-2026-10-13 — **MVO-FIX-001: IMPLEMENTED / LOCAL SYNTHESIS VERIFIED / RELEASE PENDING.** The pinned TTS package now connects through Microsoft's current synthesis WebSocket endpoint. The legacy endpoint rejected connections with HTTP 403. Short and multi-sentence Sonia announcements returned valid 24 kHz mono MP3s through the local HTTP handler; ten Python tests and all four JavaScript check suites pass. Production recovery and browser playback after release remain NOT TESTED. See [implementation status](docs/IMPLEMENTATION_PLAN.md) and [task evidence](docs/tasks/MVO-FIX-001.md).
+2026-10-13 — **MVO-FIX-001: IMPLEMENTED / LOCAL AND PRODUCTION SYNTHESIS VERIFIED.** The pinned TTS package now connects through Microsoft's current synthesis WebSocket endpoint. The legacy endpoint rejected connections with HTTP 403. Short and multi-sentence Sonia announcements returned valid 24 kHz mono MP3s through the local HTTP handler; ten Python tests and all four JavaScript check suites pass. Pushed repair ab3ec51 and Vercel production deployment were verified; production POST /api/tts returns a valid Sonia MP3. Browser playback/download and human listening remain NOT TESTED. See [implementation status](docs/IMPLEMENTATION_PLAN.md) and [task evidence](docs/tasks/MVO-FIX-001.md).
 
 ## Features
 

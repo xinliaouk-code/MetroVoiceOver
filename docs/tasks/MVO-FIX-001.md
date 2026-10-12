@@ -1,7 +1,7 @@
 # MVO-FIX-001 — repair upstream synthesis endpoint
 
 Date: 2026-10-13 (Asia/Shanghai)
-Status: IMPLEMENTED / LOCAL VERIFIED / PUSH AUTHORISED / PRODUCTION CHECK PENDING.
+Status: IMPLEMENTED / LOCAL AND PRODUCTION SYNTHESIS VERIFIED / RELEASED.
 
 ## Input and baseline
 User: inspect GitHub code and repair Audio generation failed on MetroVoiceOver.
@@ -28,10 +28,15 @@ No station GAME_DESIGN/AUDIO_SPEC/FLEET_CATALOGUE/reference-index semantic updat
 - Diagnostic transport used the existing macOS system proxy in the isolated test runner only. No proxy setting or generated MP3 is a production dependency or committed source.
 
 ## Limitations and next step
-Local synthesis is VERIFIED; restored production/browser playback, effects rendering on the released response, and human listening are NOT TESTED. This compatibility override relies on the explicitly pinned package internals; remove it after reviewing a future package release that incorporates the new endpoint, with live synthesis verification.
+Local and production synthesis are VERIFIED; browser playback, effects rendering on the released response, and human listening are NOT TESTED. This compatibility override relies on the explicitly pinned package internals; remove it after reviewing a future package release that incorporates the new endpoint, with live synthesis verification.
 The user explicitly authorised pushing the reviewed repair on 2026-10-13. Push to the existing main branch and verify the existing Vercel Git integration deployment, deployed commit and production MP3 generation. Browser playback/download and human listening remain separate checks.
 
 ## Parent documentation checker limitation
 The required parent scripts/check_docs_sync.py was run and returned FAIL against its historical GLT-050 baseline: pre-existing main.gd, Class345 .import and project/render differences. The parent tracked Git status is identical to task opening; these failures are not caused by this nested API repair.
 The checker also regenerated its ignored historical evidence/v05/docs-change-manifest.json at its default output path. This was unintended; no task-opening copy or matching backup was found, so exact historical manifest preservation cannot be claimed. This generated-document exception does not alter station runtime assets or the nested repository. Future checks must set an owned --output path before running this historical checker.
 Manual rule-to-code review: fixed Sonia/rate/pitch/volume, validation, error response, MP3 headers, temporary storage, frontend effects and parent gameplay authority preserved. New host is Microsoft's endpoint verified by live synthesis; no temporary script/proxy/file is a runtime dependency.
+
+## Authorised release evidence
+User explicitly authorised pushing on 2026-10-13. Native Git push had no authenticated HTTPS credential; the existing GitHub connector published exactly the five reviewed files using a fast-forward ref update with expected-head checking. Published repair commit: ab3ec51fb76ed4bf12ddfaed709c444277ccd977. Local validation commit was preserved on codex/local-tts-validation, and local main was synced to the identical remote source tree without overwriting work.
+Vercel Git production deployment: dpl_ASiJqccp9ChYLkYg1MRwRDqM32F7, metrovoiceover-15eqs7k7e-x-ce13.vercel.app, source ab3ec51fb76ed4bf12ddfaed709c444277ccd977, READY. Production alias https://metrovoiceover.vercel.app/api/tts returned HTTP 200 audio/mpeg, no-store, 17,424-byte MP3, 24 kHz mono / 48 kbps / 2.904 seconds. No additional deployment project, credential or configuration was introduced.
+The user-supplied older immutable deployment URL continues to refer to the original deployment; the current production alias is the supported entry point. The endpoint has no known fixed expiry interval, and future upstream protocol changes may require another compatibility update.
